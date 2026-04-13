@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir matterdelta
 
 VOLUME /data
 COPY entrypoint.sh /entrypoint.sh
+COPY setup_groups.py /setup_groups.py
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
