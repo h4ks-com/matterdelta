@@ -1,0 +1,8 @@
+{
+  "api": {
+    "url": "http://matterbridge:4241",
+    "token": "hackmeh4k3r"
+  },
+  "quoteFormat": "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE:.46})",
+  "gateways": []
+}
