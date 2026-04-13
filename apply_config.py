@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 
 DATA_DIR = os.environ.get("DATA_DIR", "/data")
 
@@ -38,7 +39,17 @@ def call(method, *args):
     return r["result"]
 
 
-accounts = call("get_all_account_ids")
+# Wait for rpc-server to be ready before sending requests
+for attempt in range(20):
+    try:
+        accounts = call("get_all_account_ids")
+        break
+    except (json.JSONDecodeError, ValueError):
+        time.sleep(0.5)
+else:
+    print("ERROR: rpc-server did not become ready in time", file=sys.stderr)
+    proc.terminate()
+    sys.exit(1)
 if not accounts:
     print("No accounts found, skipping config apply.", file=sys.stderr)
     proc.terminate()
