@@ -67,4 +67,8 @@ if not call("is_configured", accid):
 else:
     print("Account already configured.", file=sys.stderr)
 
+# 2-day message cleanup on the bot device
+call("set_config", accid, "delete_device_after", "172800")
+print("Set delete_device_after=172800", file=sys.stderr)
+
 proc.terminate()
