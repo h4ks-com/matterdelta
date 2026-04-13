@@ -15,15 +15,25 @@ DATA_DIR = os.environ.get("DATA_DIR", "/data")
 env = os.environ.copy()
 env["DC_ACCOUNTS_PATH"] = os.path.join(DATA_DIR, "accounts")
 
-proc = subprocess.Popen(
-    ["deltachat-rpc-server"],
-    stdin=subprocess.PIPE,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.DEVNULL,
-    env=env,
-)
-
 _id = 0
+proc = None
+
+
+def start_proc():
+    global proc, _id
+    if proc is not None:
+        try:
+            proc.terminate()
+        except OSError:
+            pass
+    _id = 0
+    proc = subprocess.Popen(
+        ["deltachat-rpc-server"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        env=env,
+    )
 
 
 def call(method, *args):
@@ -39,17 +49,23 @@ def call(method, *args):
     return r["result"]
 
 
-# Wait for rpc-server to be ready before sending requests
+start_proc()
+
+# rpc-server may take a moment to initialize accounts — retry, respawning if pipe breaks
 for attempt in range(20):
     try:
         accounts = call("get_all_account_ids")
         break
     except (json.JSONDecodeError, ValueError):
         time.sleep(0.5)
+    except (BrokenPipeError, OSError):
+        time.sleep(0.5)
+        start_proc()
 else:
     print("ERROR: rpc-server did not become ready in time", file=sys.stderr)
     proc.terminate()
     sys.exit(1)
+
 if not accounts:
     print("No accounts found, skipping config apply.", file=sys.stderr)
     proc.terminate()
@@ -57,7 +73,6 @@ if not accounts:
 
 accid = accounts[0]
 
-# 2-day message cleanup on the bot device
 call("set_config", accid, "delete_device_after", "172800")
 print(f"Applied config for account {accid}: delete_device_after=172800", file=sys.stderr)
 
