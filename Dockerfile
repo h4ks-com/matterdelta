@@ -1,8 +1,8 @@
 FROM python:3.11-alpine
 
-RUN apk add --no-cache libgcc libstdc++
+RUN apk add --no-cache libgcc libstdc++ git
 
-RUN pip install --no-cache-dir matterdelta
+RUN pip install --no-cache-dir 'matterdelta @ git+https://github.com/h4ks-com/matterdelta-py@master'
 
 VOLUME /data
 COPY entrypoint.sh /entrypoint.sh
