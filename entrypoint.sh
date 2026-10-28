@@ -16,4 +16,5 @@ fi
 # This ensures settings like delete_device_after survive container rebuilds.
 python3 /apply_config.py
 
-matterdelta --config-dir "$CFG" serve
+# deltabot-cli re-adds --config-dir to every subcommand with its default, so the flag must follow serve.
+matterdelta serve --config-dir "$CFG"
